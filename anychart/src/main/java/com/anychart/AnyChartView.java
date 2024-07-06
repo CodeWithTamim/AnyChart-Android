@@ -5,7 +5,9 @@ import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
+
 import androidx.annotation.Nullable;
+
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,13 +26,16 @@ import com.anychart.core.Chart;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 
-public final class AnyChartView extends FrameLayout {
+public final class AnyChartView extends FrameLayout
+{
 
-    public interface JsListener {
+    public interface JsListener
+    {
         void onJsLineAdd(String jsLine);
     }
 
-    public interface OnRenderedListener {
+    public interface OnRenderedListener
+    {
         void onRendered();
     }
 
@@ -52,24 +57,29 @@ public final class AnyChartView extends FrameLayout {
     private String licenceKey = "";
     private View progressBar;
     private String backgroundColor;
+    private String versionLabel = "";
 
-    public AnyChartView(Context context) {
+    public AnyChartView(Context context)
+    {
         super(context);
         init();
     }
 
-    public AnyChartView(Context context, @Nullable AttributeSet attrs) {
+    public AnyChartView(Context context, @Nullable AttributeSet attrs)
+    {
         super(context, attrs);
         init();
     }
 
-    public AnyChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public AnyChartView(Context context, @Nullable AttributeSet attrs, int defStyleAttr)
+    {
         super(context, attrs, defStyleAttr);
         init();
     }
 
     @Override
-    public Parcelable onSaveInstanceState() {
+    public Parcelable onSaveInstanceState()
+    {
         Bundle bundle = new Bundle();
         bundle.putParcelable("superState", super.onSaveInstanceState());
         bundle.putString("js", js.toString());
@@ -78,8 +88,10 @@ public final class AnyChartView extends FrameLayout {
     }
 
     @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof Bundle) {
+    public void onRestoreInstanceState(Parcelable state)
+    {
+        if (state instanceof Bundle)
+        {
             Bundle bundle = (Bundle) state;
             js.append(bundle.getString("js"));
             state = bundle.getParcelable("superState");
@@ -90,7 +102,8 @@ public final class AnyChartView extends FrameLayout {
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
-    private void init() {
+    private void init()
+    {
         LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.view_anychart, this, true);
 
@@ -107,9 +120,11 @@ public final class AnyChartView extends FrameLayout {
         webView.setLongClickable(true);
         webView.setOnLongClickListener(v -> true);
 
-        webView.setWebChromeClient(new WebChromeClient() {
+        webView.setWebChromeClient(new WebChromeClient()
+        {
             @Override
-            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage)
+            {
                 if (isDebug) Log.e("AnyChart", consoleMessage.message());
                 webView.setEnabled(false);
                 return true;
@@ -118,24 +133,31 @@ public final class AnyChartView extends FrameLayout {
 
         isRendered = false;
         JsObject.variableIndex = 0;
-        setJsListener(jsLine -> webView.post(() -> {
-            if (isRestored) {
+        setJsListener(jsLine -> webView.post(() ->
+        {
+            if (isRestored)
+            {
                 return;
             }
-            if (isRendered) {
+            if (isRendered)
+            {
                 webView.evaluateJavascript(jsLine, null);
-            } else {
+            } else
+            {
                 js.append(jsLine);
             }
         }));
 
-        webView.setWebViewClient(new WebViewClient() {
+        webView.setWebViewClient(new WebViewClient()
+        {
             @Override
-            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request)
+            {
                 return true;
             }
 
-            public void onPageFinished(WebView view, String url) {
+            public void onPageFinished(WebView view, String url)
+            {
                 String resultJs = (isRestored)
                         ? js.toString()
                         : js
@@ -156,7 +178,8 @@ public final class AnyChartView extends FrameLayout {
                                 "anychart.onDocumentReady(function () {\n" +
                                 resultJs +
                                 "});",
-                        value -> {
+                        value ->
+                        {
                             if (onRenderedListener != null)
                                 onRenderedListener.onRendered();
                             if (progressBar != null)
@@ -171,12 +194,14 @@ public final class AnyChartView extends FrameLayout {
     }
 
     @Override
-    protected void onDetachedFromWindow() {
+    protected void onDetachedFromWindow()
+    {
         super.onDetachedFromWindow();
         APIlib.getInstance().setActiveAnyChartView(null);
     }
 
-    private void loadHtml() {
+    private void loadHtml()
+    {
         String htmlData = "<html>\n" +
                 "<head>\n" +
                 "    <meta http-equiv=\"content-type\" content=\"text/html; charset=UTF-8\">\n" +
@@ -198,108 +223,140 @@ public final class AnyChartView extends FrameLayout {
                 "<div id=\"container\"></div>\n" +
                 "</body>\n" +
                 "</html>";
-        
+
         webView.loadDataWithBaseURL("https://www.google.com", htmlData, "text/html", "UTF-8", null);
     }
 
-    public void addScript(String url) {
+    public void addScript(String url)
+    {
         scripts.append("<script src=\"")
                 .append(url)
                 .append("\"></script>\n");
     }
 
-    public void addCss(String url) {
+    public void addCss(String url)
+    {
         scripts.append("<link rel=\"stylesheet\" href=\"")
                 .append(url)
                 .append("\"/>\n");
     }
 
-    public void addFont(String fontFamily, String url) {
+    public void addFont(String fontFamily, String url)
+    {
         fonts.append("@font-face {\n")
                 .append("font-family: ").append(fontFamily).append(";\n")
                 .append("src: url(").append(url).append(");\n")
                 .append("}\n");
     }
 
-    public void setLicenceKey(String key) {
+    public void setLicenceKey(String key)
+    {
         licenceKey = key;
     }
 
-    public void setZoomEnabled(Boolean value) {
+    public void setZoomEnabled(Boolean value)
+    {
         webView.getSettings().setBuiltInZoomControls(value);
         webView.getSettings().setDisplayZoomControls(!value);
     }
 
-    public void clear() {
+    public void clear()
+    {
         webView.loadUrl("about:blank");
         isRendered = false;
-        if (progressBar != null) {
+        if (progressBar != null)
+        {
             progressBar.setVisibility(VISIBLE);
         }
     }
 
-    public void setChart(Chart chart) {
+    public void setChart(Chart chart)
+    {
         isRestored = false;
         this.chart = chart;
         loadHtml();
     }
 
-    public void setProgressBar(View progressBar) {
+    public void setProgressBar(View progressBar)
+    {
         this.progressBar = progressBar;
         progressBar.setVisibility(VISIBLE);
     }
 
-    public void setBackgroundColor(String color) {
+    public void setBackgroundColor(String color)
+    {
         this.backgroundColor = color;
         webView.setBackgroundColor(Color.parseColor(color));
     }
 
-    public void setJsListener(JsListener listener) {
+    public void setJsListener(JsListener listener)
+    {
         this.jsListener = listener;
     }
 
-    public JsListener getJsListener() {
+    public JsListener getJsListener()
+    {
         return jsListener;
     }
 
-    public OnRenderedListener getOnRenderedListener() {
+    public OnRenderedListener getOnRenderedListener()
+    {
         return onRenderedListener;
     }
 
-    public void setOnRenderedListener(OnRenderedListener onRenderedListener) {
+    public void setOnRenderedListener(OnRenderedListener onRenderedListener)
+    {
         this.onRenderedListener = onRenderedListener;
     }
 
-    public void setDebug(boolean value) {
+    public void setDebug(boolean value)
+    {
         this.isDebug = value;
     }
-    
-    private String md5(String s) {
-        try {
+
+    private String md5(String s)
+    {
+        try
+        {
             java.security.MessageDigest md = java.security.MessageDigest.getInstance("MD5");
             byte[] array = md.digest(s.getBytes(StandardCharsets.UTF_8));
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < array.length; ++i) {
-                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+            for (int i = 0; i < array.length; ++i)
+            {
+                sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1, 3));
             }
             return sb.toString();
-        } catch (NoSuchAlgorithmException e) {
+        } catch (NoSuchAlgorithmException e)
+        {
             e.printStackTrace();
         }
         return "";
     }
-    
-    private String androidCheck(String l) {
-        if (l == null || l.isEmpty() || md5(l) == "0df80e76aeca7dc40e01e876dca3542b") {
+
+    public void setLabelVersion(String text)
+    {
+        this.versionLabel = text;
+    }
+
+    public String getLabelVersion()
+    {
+        return versionLabel;
+    }
+
+    private String androidCheck(String l)
+    {
+        if (l == null || l.isEmpty() || md5(l).equals("0df80e76aeca7dc40e01e876dca3542b"))
+        {
             return "var btoa = window.btoa(JSON.stringify({\n" +
-                    "    chartType: '" + chart.getJsBase().replaceAll("\\d","") + "',\n" +
+                    "    chartType: '" + chart.getJsBase().replaceAll("\\d", "") + "',\n" +
                     "    apkName: \"" + getContext().getPackageName() + "\"\n" +
                     "}));" +
                     chart.getJsBase() + ".credits({\n" +
                     "         logoSrc: 'https://static.anychart.com/logo-for-android.png?data=' + btoa,\n" +
-                    "         text: 'AnyChart Trial Version'\n" +
+                    "         text: " + getLabelVersion() +
                     "       });\n";
         }
         return "";
     }
+
 }
